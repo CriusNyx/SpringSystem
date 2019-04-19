@@ -7,24 +7,9 @@ public abstract class SpringComponent : MonoBehaviour
     public SpringComponent parent { get; private set; }
     public readonly List<SpringComponent> children = new List<SpringComponent>();
 
-    private Wrapper<Vector3> _position = new Wrapper<Vector3>();
-    private Wrapper<Quaternion> _rotation = new Wrapper<Quaternion>();
+    public Vector3 position { get; private set; }
 
-    public IReadOnlyWrapper<Vector3> position
-    {
-        get
-        {
-            return _position;
-        }
-    }
-
-    public IReadOnlyWrapper<Quaternion> rotation
-    {
-        get
-        {
-            return _rotation;
-        }
-    }
+    public Quaternion rotation { get; private set; }
 
     public static T Create<T>(string name = "", SpringComponent parent = null) where T : SpringComponent
     {
@@ -43,6 +28,12 @@ public abstract class SpringComponent : MonoBehaviour
         transform.parent = parent?.transform;
 
         return (T)this;
+    }
+
+    public void Start()
+    {
+        this.position = transform.position;
+        this.rotation = transform.rotation;
     }
 
 #if UNITY_EDITOR
@@ -86,20 +77,57 @@ public abstract class SpringComponent : MonoBehaviour
             deltaTime = Time.deltaTime;
         }
         (position, rotation) = GetPositionRotation(position, rotation, deltaTime);
-        _position.Value = position;
-        _rotation.Value = rotation;
-        foreach(var child in children)
+
+        this.position = position;
+        this.rotation = rotation;
+
+        transform.position = this.position;
+        transform.rotation = this.rotation;
+
+        foreach (var child in children)
         {
             child.Propegate(position, rotation, deltaTime);
         }
     }
 
-    public IReadOnlyWrapper<Vector3> GetPositionRef()
+    public void Reset(Vector3 position, Quaternion rotation)
     {
-        return position;
+        (position, rotation) = PropegateReset(position, rotation);
+
+        foreach(var child in children)
+        {
+            child.Reset(position, rotation);
+        }
     }
-    public IReadOnlyWrapper<Quaternion> GetRotationRef()
+
+    protected abstract (Vector3 position, Quaternion rotation) PropegateReset(Vector3 position, Quaternion rotation);
+
+    //public IReadOnlyWrapper<Vector3> GetPositionRef()
+    //{
+    //    return position;
+    //}
+    //public IReadOnlyWrapper<Quaternion> GetRotationRef()
+    //{
+    //    return rotation;
+    //}
+
+    public static SpringComponent AutoLink(GameObject gameObject)
     {
-        return rotation;
+        SpringComponent root = gameObject.GetComponent<SpringComponent>();
+
+        if (root != null)
+        {
+            foreach (Transform child in gameObject.transform)
+            {
+                SpringComponent c = AutoLink(child.gameObject);
+                if (c != null)
+                {
+                    c.parent = root;
+                    root.children.Add(c);
+                }
+            }
+        }
+
+        return root;
     }
 }

@@ -9,4 +9,9 @@ public class SpringOffset : SpringComponent
     {
         return (position + rotation * offset, rotation * rotationOffset);
     }
+
+    protected override (Vector3 position, Quaternion rotation) PropegateReset(Vector3 position, Quaternion rotation)
+    {
+        return (offset + rotation * offset, rotationOffset * rotation);
+    }
 }

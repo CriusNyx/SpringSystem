@@ -9,9 +9,11 @@ public class AxialSpring : SpringComponent
 
     protected override (Vector3, Quaternion) GetPositionRotation(Vector3 position, Quaternion rotation, float deltaTime)
     {
-        Vector3 offset = this.position.Get() - position;
+        float dConstant = Mathf.Pow(dynamicStrength, deltaTime);
+
+        Vector3 offset = this.position - position;
         float value = Vector3.Dot(rotation * axis, offset);
-        value = Mathf.Lerp(value, 0f, dynamicStrength * deltaTime);
+        value *= dConstant;
         value = Mathf.MoveTowards(value, 0f, staticStrength * deltaTime);
 
         if(maxDistance > 0f && Mathf.Abs(value) > maxDistance)
@@ -20,5 +22,10 @@ public class AxialSpring : SpringComponent
         }
 
         return (position + rotation * axis * value, rotation);
+    }
+
+    protected override (Vector3 position, Quaternion rotation) PropegateReset(Vector3 position, Quaternion rotation)
+    {
+        return (position, rotation);
     }
 }

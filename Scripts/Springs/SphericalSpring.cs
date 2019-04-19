@@ -8,14 +8,23 @@ public class SphericalSpring : SpringComponent
 
     protected override (Vector3, Quaternion) GetPositionRotation(Vector3 position, Quaternion rotation, float deltaTime)
     {
-        Vector3 temp = Vector3.Lerp(this.position.Get(), position, dynamicStrength * deltaTime);
-        temp = Vector3.MoveTowards(temp, position, staticStrength * deltaTime);
+        float dConstant = Mathf.Pow(dynamicStrength, deltaTime);
 
-        if(maxDistance > 0f && Vector3.Distance(position, temp) > maxDistance)
+        Vector3 temp = this.position - position;
+        float mag = temp.magnitude;
+        if (mag != 0)
         {
-            temp = Vector3.Normalize(temp - position) * maxDistance;
+            float newMag = mag * dConstant;
+            newMag = Mathf.Max(0f, newMag - staticStrength);
+
+            temp = temp * newMag / mag;
         }
 
-        return (temp, rotation);
+        return (this.position - temp, rotation);
+    }
+
+    protected override (Vector3 position, Quaternion rotation) PropegateReset(Vector3 position, Quaternion rotation)
+    {
+        return (position, rotation);
     }
 }

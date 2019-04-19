@@ -52,7 +52,7 @@ public class EditorSpringSimulator : MonoBehaviour
         var comp = transform.GetComponent<SpringComponent>();
         if(comp != null)
         {
-            Gizmos.DrawSphere(comp.position.Get(), 0.1f);
+            Gizmos.DrawSphere(comp.position, 0.1f);
         }
         foreach(Transform child in transform)
         {

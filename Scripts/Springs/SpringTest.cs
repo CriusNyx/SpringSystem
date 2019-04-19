@@ -27,8 +27,8 @@ public class SpringTest : MonoBehaviour
         arm = Create<SphericalSpring>("arm", root);
         rotSpring = Create<RadialSpring>("rot", arm);
 
-        pos = rotSpring.GetPositionRef();
-        rot = rotSpring.GetRotationRef();
+        //pos = rotSpring.GetPositionRef();
+        //rot = rotSpring.GetRotationRef();
 
         cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
     }
