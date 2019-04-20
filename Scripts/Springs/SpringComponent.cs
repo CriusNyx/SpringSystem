@@ -7,8 +7,16 @@ public abstract class SpringComponent : MonoBehaviour
     public SpringComponent parent { get; private set; }
     public readonly List<SpringComponent> children = new List<SpringComponent>();
 
+    /// <summary>
+    /// Position is world space
+    /// This position is used over transform position to preserve world space in transformation heigharchy
+    /// </summary>
     public Vector3 position { get; private set; }
 
+    /// <summary>
+    /// Rotation in world space
+    /// This rotation is used over transform position to preserve world space in transformation heigharchys
+    /// </summary>
     public Quaternion rotation { get; private set; }
 
     public static T Create<T>(string name = "", SpringComponent parent = null) where T : SpringComponent
@@ -45,11 +53,11 @@ public abstract class SpringComponent : MonoBehaviour
     private static void AutoUpdateScan(SpringComponent parent, GameObject gameObject)
     {
         var comp = gameObject.GetComponent<SpringComponent>();
-        if(comp != null)
+        if (comp != null)
         {
             comp.parent = parent;
 
-            if(parent != null)
+            if (parent != null)
             {
                 parent.children.Add(comp);
             }
@@ -61,13 +69,23 @@ public abstract class SpringComponent : MonoBehaviour
             comp = parent;
         }
 
-        foreach(Transform child in gameObject.transform)
+        foreach (Transform child in gameObject.transform)
         {
             AutoUpdateScan(comp, child.gameObject);
         }
     }
 #endif
 
+    /// <summary>
+    /// Modify the position and rotation of the spring component
+    /// 
+    /// Accepts the current position and rotation from the parent
+    /// Returns the position and rotation of this spring
+    /// </summary>
+    /// <param name="position"></param>
+    /// <param name="rotation"></param>
+    /// <param name="deltaTime"></param>
+    /// <returns></returns>
     protected abstract (Vector3, Quaternion) GetPositionRotation(Vector3 position, Quaternion rotation, float deltaTime);
 
     public void Propegate(Vector3 position, Quaternion rotation, float deltaTime = -1f)
@@ -97,6 +115,22 @@ public abstract class SpringComponent : MonoBehaviour
         foreach(var child in children)
         {
             child.Reset(position, rotation);
+        }
+    }
+
+    public void PropegateDelta(Matrix4x4 delta)
+    {
+        PropegateDelta(delta, delta.rotation);
+    }
+
+    private void PropegateDelta(Matrix4x4 delta, Quaternion rotation)
+    {
+        position = delta.MultiplyPoint(position);
+        this.rotation = rotation * this.rotation;
+
+        foreach(var child in children)
+        {
+            child.PropegateDelta(delta, rotation);
         }
     }
 

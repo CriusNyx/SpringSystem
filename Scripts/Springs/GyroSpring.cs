@@ -19,10 +19,10 @@ public class GyroSpring : SpringComponent
         var newUp = Vector3.RotateTowards(currentUp, targetUp, staticStrength * Time.deltaTime, 0f);
 
         //Debug.Log(string.Format("fCount: {4}\nforward: {0}\ncUp: {1}\ntUp: {2}\nnUp: {3}", targetForward.ToString("G7"), currentUp.ToString("G7"), targetUp.ToString("G7"), newUp.ToString("G7"), Time.frameCount));
-        //Debug.DrawRay(position, targetForward, Color.red, 0.1f);
-        //Debug.DrawRay(position, currentUp, Color.green, 0.1f);
-        //Debug.DrawRay(position, targetUp, Color.blue, 0.1f);
-        //Debug.DrawRay(position, newUp, Color.yellow, 0.1f);
+        Debug.DrawRay(position, targetForward, Color.red, 0.1f);
+        Debug.DrawRay(position, currentUp, Color.green, 0.1f);
+        Debug.DrawRay(position, targetUp, Color.blue, 0.1f);
+        Debug.DrawRay(position, newUp, Color.yellow, 0.1f);
 
         return (position, Quaternion.LookRotation(targetForward, newUp));
     }
